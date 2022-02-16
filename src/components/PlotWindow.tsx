@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { range } from "../utils/range";
+import { rejects } from "assert";
 
 export enum CURSOR_MODE {
   MOVE = "move",
@@ -419,11 +420,6 @@ function PlotWindow(props: PlotWindowProps) {
 
   // grabby functions
   function selectPan(e: React.MouseEvent<HTMLCanvasElement>) {
-    e = e || window.event;
-    e.preventDefault();
-
-    document.getElementById("root")!.style.cursor = "move";
-
     clientX = e.clientX;
     clientY = e.clientY;
 
@@ -434,9 +430,6 @@ function PlotWindow(props: PlotWindowProps) {
   function dragPan(e: MouseEvent) {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    e = e || window.event;
-    e.preventDefault();
 
     // difference between old mouse position and current mouse position
     const diffX = e.clientX - clientX;
@@ -458,13 +451,9 @@ function PlotWindow(props: PlotWindowProps) {
   }
 
   function deselectPan(e: MouseEvent) {
-    e = e || window.event;
-    e.preventDefault();
-
     setClientX(e.clientX);
     setClientY(e.clientY);
 
-    document.getElementById("root")!.style.cursor = "default";
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -473,9 +462,6 @@ function PlotWindow(props: PlotWindowProps) {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
     if (!canvas || !wrapper) return;
-
-    e = e || window.event;
-    e.preventDefault();
 
     let id = 0;
     if (pts.length > 0) id = Math.max(...pts.map((pt) => pt.id)) + 1;
@@ -505,9 +491,6 @@ function PlotWindow(props: PlotWindowProps) {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
-    e = e || window.event;
-    e.preventDefault();
-
     const cursor = pixel2coord({
       x: e.clientX - wrapper.offsetLeft,
       y: e.clientY - wrapper.offsetTop,
@@ -533,9 +516,6 @@ function PlotWindow(props: PlotWindowProps) {
       // get the idx of the point
       const { pt } = getPt(id);
       if (!pt) return;
-
-      e = e || window.event;
-      e.preventDefault();
     };
   }
 
@@ -547,9 +527,6 @@ function PlotWindow(props: PlotWindowProps) {
       if (!pt) return;
       const wrapper = wrapperRef.current;
       if (!wrapper) return;
-
-      e = e || window.event;
-      e.preventDefault();
 
       // get pixel diff since mouse moved
       const x2 = e.clientX - 0.5 * DIAMETER - wrapper.offsetLeft;
@@ -641,19 +618,27 @@ function PlotWindow(props: PlotWindowProps) {
         }
         onWheel={zoom}
       ></canvas>
-      {pts.map((pt, idx) => {
-        return (
-          <Point
-            data={pt}
-            onWheel={zoom}
-            setCursor={setCursor}
-            onMouseDown={selectPoint(pt.id)}
-            onMouseMove={dragPoint(pt.id)}
-            delete={() => deletePt(pt.id)}
-            setColor={setColor(pt)}
-          />
-        );
-      })}
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        {pts.map((pt, idx) => {
+          return (
+            <Point
+              data={pt}
+              onWheel={zoom}
+              setCursor={setCursor}
+              onMouseDown={selectPoint(pt.id)}
+              onMouseMove={dragPoint(pt.id)}
+              delete={() => deletePt(pt.id)}
+              key={"pt" + pt.id}
+              setColor={setColor(pt)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -673,7 +658,6 @@ function Point(props: PointProps) {
   const [grabbing, setGrabbing] = useState(false);
   const [hover, setHover] = useState(false);
   const [showCoords, setShowCoords] = useState(false);
-  // const [color, setColor] = useState("black");
 
   function mouseDown(e: React.MouseEvent<HTMLDivElement>) {
     document.getElementById("root")!.style.cursor = "grabbing";
@@ -710,6 +694,9 @@ function Point(props: PointProps) {
     mouseUp();
     mouseLeave();
     props.delete();
+  }
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   const pointStyle: React.CSSProperties = {
@@ -750,6 +737,7 @@ function Point(props: PointProps) {
   const cardStyle: React.CSSProperties = {
     pointerEvents: shouldOpen() ? "all" : "none",
     opacity: shouldOpen() ? 1 : 0,
+    zIndex: 1,
     position: "absolute",
     top: "0px",
     left: 0.8 * DIAMETER,
@@ -758,7 +746,6 @@ function Point(props: PointProps) {
     borderRadius: "10px",
     transitionDelay: shouldOpen() ? "0.5s" : "0s",
     padding: "5px",
-    zIndex: 1,
   };
 
   const cardLabel: React.CSSProperties = {
@@ -813,7 +800,6 @@ function Point(props: PointProps) {
 
   return (
     <div
-      key={`pt+${props.data.id}`}
       id={props.data.id.toString()}
       style={pointStyle}
       ref={props.data.ref}

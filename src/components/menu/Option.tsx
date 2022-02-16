@@ -8,7 +8,6 @@ import {
 } from "./styles";
 
 interface OptionProps<T> {
-  key: string;
   option: T;
   selected: T;
   minWidth?: number;
@@ -88,13 +87,12 @@ function Option<T>(props: OptionProps<T>) {
 
   return (
     <button
-      key={props.key}
       style={optionWrapper()}
       onMouseDown={mouseDown}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <p style={optionStyle}>{props.children}</p>
+      <div style={optionStyle}>{props.children}</div>
       <div style={modal}>{props.helpText}</div>
     </button>
   );
