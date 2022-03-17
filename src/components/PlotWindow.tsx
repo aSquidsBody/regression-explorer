@@ -98,11 +98,40 @@ function PlotWindow(props: PlotWindowProps) {
     };
   }
 
-  // method to convert pixel to coord
-  function pixel2coord(px: Cartesian) {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  function xPixel2coord(px: number, ctx: CanvasRenderingContext2D) {
+    return (
+      ((xCoordRange[1] - xCoordRange[0]) * px) / ctx.canvas.width +
+      xCoordRange[0]
+    );
+  }
 
+  function yPixel2coord(px: number, ctx: CanvasRenderingContext2D) {
+    return (
+      ((yCoordRange[0] - yCoordRange[1]) * px) / ctx.canvas.height +
+      yCoordRange[1]
+    );
+  }
+
+  function xCoord2pixel(px: number, ctx: CanvasRenderingContext2D) {
+    return (
+      ((px - xCoordRange[0]) * ctx.canvas.width) /
+      (xCoordRange[1] - xCoordRange[0])
+    );
+  }
+
+  function yCoord2pixel(px: number, ctx: CanvasRenderingContext2D) {
+    return (
+      ((px - yCoordRange[1]) * ctx.canvas.height) /
+      (yCoordRange[0] - yCoordRange[1])
+    );
+  }
+
+  // method to convert pixel to coord
+  function pixel2coord(px: Cartesian, canvas?: HTMLCanvasElement) {
+    if (!canvas) {
+      canvas = canvasRef.current || undefined;
+    }
+    if (!canvas) return;
     const xRange = xCoordRange[1] - xCoordRange[0];
     const yRange = yCoordRange[1] - yCoordRange[0];
     if (xRange <= 0 || yRange <= 0) return;
@@ -117,16 +146,18 @@ function PlotWindow(props: PlotWindowProps) {
   }
 
   // method to convert coord to pixel
-  function coord2pixel(px: Cartesian) {
-    const canvas = canvasRef.current;
+  function coord2pixel(px: Cartesian, canvas?: HTMLCanvasElement) {
+    if (!canvas) {
+      canvas = canvasRef.current || undefined;
+    }
     if (!canvas) return;
 
     const xRange = xCoordRange[1] - xCoordRange[0];
     const yRange = yCoordRange[1] - yCoordRange[0];
     if (xRange <= 0 || yRange <= 0) return;
 
-    const height = canvas.clientHeight;
-    const width = canvas.clientWidth;
+    const height = canvas!.clientHeight;
+    const width = canvas!.clientWidth;
     return {
       x: ((px.x - xCoordRange[0]) * width) / xRange,
       y: ((px.y - yCoordRange[1]) * height) / -yRange,
@@ -238,7 +269,9 @@ function PlotWindow(props: PlotWindowProps) {
       if (!tickPixels[i]) return;
     }
 
-    tickPixels.forEach((px, idx) => {
+    for (var idx = 0; idx < tickPixels.length; idx++) {
+      const px = tickPixels[idx];
+
       const x = px!.x;
       const y = px!.y;
 
@@ -319,7 +352,7 @@ function PlotWindow(props: PlotWindowProps) {
           }
         }
       }
-    });
+    }
   }
 
   // helper function to get tick scaling
@@ -364,11 +397,19 @@ function PlotWindow(props: PlotWindowProps) {
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D
   ) {
-    if (!props.algorithm || !algorithms.has(props.algorithm)) return;
+    if (!props.algorithm) return;
     const algorithm = algorithms.get(props.algorithm!)! as Algorithm;
 
-    const func = algorithm(pts.map((pt) => pt.coord))!;
+    const isSpline = props.algorithm?.includes("spline");
+
+    const coords: Cartesian[] = [];
+    for (const pt of pts) {
+      coords.push(pt.coord);
+    }
+
+    const func = algorithm(coords)!;
     if (!func) return;
+
     // plotFunction
     const dx = 0.25;
     ctx.beginPath();
@@ -377,55 +418,63 @@ function PlotWindow(props: PlotWindowProps) {
 
     var numInterp = Math.floor(canvas.clientWidth / dx);
     var interpXs = range(dx, (numInterp + 1) * dx, dx); // xPixels
-    const maxX = Math.max(...pts.map((pt) => pt.pixel.x));
-    const minX = Math.min(...pts.map((pt) => pt.pixel.x));
+
+    var maxX = pts[0].pixel.x;
+    var minX = maxX;
+    for (const pt of pts) {
+      const x = pt.pixel.x;
+      if (x < minX) {
+        minX = x;
+      }
+      if (x > maxX) {
+        maxX = x;
+      }
+    }
 
     // initialize the previous step of the path
-    const prevPixel = { x: 0, y: 0 };
-    const prevCoord = pixel2coord(prevPixel);
-    if (!prevCoord) return ctx.closePath();
-    prevCoord.y = func(prevCoord.x);
-    prevPixel.y = coord2pixel(prevCoord)!.y;
+    var prevPixelX = 0;
+    var prevCoordX = xPixel2coord(prevPixelX, ctx);
+    var prevCoordY = func(prevCoordX);
+    var prevPixelY = yCoord2pixel(prevCoordY, ctx);
 
-    interpXs.forEach((currentX) => {
-      const pixel = {
-        x: currentX,
-        y: 0,
-      };
-      const coord = pixel2coord(pixel)!;
-      coord.y = func(coord.x);
-      pixel.y = coord2pixel(coord)!.y;
-      if (props.algorithm?.includes("spline")) {
-        if (prevPixel.x > minX && pixel.x < maxX) {
-          ctx.moveTo(prevPixel.x, prevPixel.y);
-          ctx.lineTo(pixel.x, pixel.y);
+    for (let i = 0; i < interpXs.length; i++) {
+      const pixelX = interpXs[i];
+      const coordX = xPixel2coord(pixelX, ctx);
+      const coordY = func(coordX);
+      const pixelY = yCoord2pixel(coordY, ctx);
+      if (isSpline) {
+        if (prevPixelX > minX && pixelX < maxX) {
+          ctx.moveTo(prevPixelX, prevPixelY);
+          ctx.lineTo(pixelX, pixelY);
         }
       } else {
         // draw the interploting line
-        ctx.moveTo(prevPixel.x, prevPixel.y);
-        ctx.lineTo(pixel.x, pixel.y);
+        ctx.moveTo(prevPixelX, prevPixelY);
+        ctx.lineTo(pixelX, pixelY);
       }
-
       // reset the prev values
-      prevPixel.x = pixel.x;
-      prevPixel.y = pixel.y;
-      prevCoord.x = coord.x;
-      prevCoord.y = coord.y;
-    });
+      prevPixelX = pixelX;
+      prevPixelY = pixelY;
+      prevCoordX = coordX;
+      prevCoordY = coordY;
+    }
     ctx.closePath();
     ctx.stroke();
   }
 
   // grabby functions
   function selectPan(e: React.MouseEvent<HTMLCanvasElement>) {
+    // setClientX(e.clientX);
+    // setClientY(e.clientY);
     clientX = e.clientX;
     clientY = e.clientY;
-
-    document.onmouseup = deselectPan;
+    window.getSelection()!.removeAllRanges();
     document.onmousemove = dragPan;
+    document.onmouseup = deselectPan;
   }
 
   function dragPan(e: MouseEvent) {
+    // window.getSelection()!.removeAllRanges();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -449,9 +498,7 @@ function PlotWindow(props: PlotWindowProps) {
   }
 
   function deselectPan(e: MouseEvent) {
-    setClientX(e.clientX);
-    setClientY(e.clientY);
-
+    window.getSelection()!.removeAllRanges();
     document.onmouseup = null;
     document.onmousemove = null;
   }
@@ -511,6 +558,7 @@ function PlotWindow(props: PlotWindowProps) {
   // point moving functions
   function selectPoint(id: number) {
     return (e: React.MouseEvent<HTMLDivElement>) => {
+      window.getSelection()!.removeAllRanges();
       // get the idx of the point
       const { pt } = getPt(id);
       if (!pt) return;
@@ -519,6 +567,7 @@ function PlotWindow(props: PlotWindowProps) {
 
   function dragPoint(id: number) {
     return (e: MouseEvent) => {
+      window.getSelection()!.removeAllRanges();
       const elmnt = document.getElementById(id.toString());
       if (!elmnt) return;
       const { pt, idx } = getPt(id);
@@ -567,6 +616,7 @@ function PlotWindow(props: PlotWindowProps) {
     draw();
   }, [pts.length]);
 
+  // move the points when the
   useEffect(() => {
     // move the points
     for (const pt of pts) {
@@ -582,6 +632,7 @@ function PlotWindow(props: PlotWindowProps) {
     draw();
   }, [xCoordRange, yCoordRange]);
 
+  // redraw when the algorithm is changed
   useEffect(() => {
     draw();
   }, [props.algorithm]);
@@ -671,6 +722,7 @@ function Point(props: PointProps) {
   }
 
   function mouseUp() {
+    window.getSelection()!.removeAllRanges();
     document.getElementById("root")!.style.cursor = "default";
     props.setCursor("");
     setGrabbing(false);

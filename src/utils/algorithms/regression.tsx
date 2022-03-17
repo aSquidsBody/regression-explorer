@@ -60,10 +60,11 @@ export function regression(points: Cartesian[], degree: number) {
 export function regressionPolynomial(coeffs: number[]) {
   return (x: number) => {
     var y = 0;
-    coeffs.forEach((coeff, idx) => {
+    for (let idx = 0; idx < coeffs.length; idx++) {
+      const coeff = coeffs[idx];
       const power = coeffs.length - 1 - idx;
       y = y + coeff * x ** power;
-    });
+    }
     return y;
   };
 }

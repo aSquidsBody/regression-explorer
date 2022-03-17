@@ -111,14 +111,16 @@ function piecewiseFunction(
   return (x: number) => {
     var returnVal: number = 0;
 
-    partitions.slice(0, partitions.length - 1).forEach((xi, idx) => {
+    for (let idx = 0; idx < partitions.length - 1; idx++) {
+      const xi = partitions[idx];
+
       const xip1 = partitions[idx + 1];
 
       if (xi <= x && x < xip1) {
         const func = funcs[idx];
         returnVal = func(x);
       }
-    });
+    }
 
     return returnVal;
   };
