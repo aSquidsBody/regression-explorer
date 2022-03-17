@@ -31,7 +31,7 @@ function Option<T>(props: OptionProps<T>) {
   }
   const optionWrapper = (): React.CSSProperties => ({
     position: "relative",
-    margin: "0px 5px",
+    margin: "5px 5px",
     height: OPTION_HEIGHT,
     minWidth: props.minWidth ? props.minWidth.toString() + "px" : OPTION_WIDTH,
     background: pressed

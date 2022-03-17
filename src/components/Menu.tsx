@@ -18,8 +18,7 @@ function Menu(props: MenuProps) {
     display: "flex",
     position: "relative",
     height: "100%",
-    overflowX: "hidden",
-    overflowY: "hidden",
+    overflow: "hidden",
   };
 
   const section: React.CSSProperties = {

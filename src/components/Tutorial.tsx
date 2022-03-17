@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 
-import mainImg from "../assets/main.png";
+import mainImg from "../assets/demo.gif";
 import cursorMode from "../assets/cursorMode.png";
 import addPoint from "../assets/addPoint.png";
 import deletePoint from "../assets/deletePoint.png";
 import regressionType from "../assets/regression.png";
 import regressionOptions from "../assets/regressionOptions.png";
-import splineOptions from "../assets/splineOptions.png";
 
 const numPages = 5;
 
@@ -98,6 +97,8 @@ function Tutorial(props: TutorialProps) {
     padding: "20px 10px 50px 10px",
     borderRadius: "5px",
     border: "solid 1px #00000044",
+    // border: "solid 1px black",
+    boxShadow: "0px 1px 4px 0px black",
     background: "white",
     maxWidth: "570px",
     width: "100%",
@@ -156,16 +157,28 @@ function Tutorial(props: TutorialProps) {
 }
 
 function Page1() {
-  const mainImageStyle: React.CSSProperties = {
-    height: "350px",
-    margin: "10px 0px",
+  const imgWrapper: React.CSSProperties = {
+    position: "relative",
+    height: "310px",
+    width: "500px",
     border: "solid 2px gray",
+    overflow: "hidden",
+    marginBottom: "20px",
+  };
+
+  const mainImageStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "-10px",
+    left: "-7px",
+    height: "100%",
+    width: "auto",
+    margin: "10px 0px",
   };
 
   return (
     <div style={centering}>
       <p style={text}>
-        Regression Explorer is a visualizer for{" "}
+        Regression Explorer is an interactive plotting tool for visualizing{" "}
         <span style={italic}>
           <a
             style={link}
@@ -183,17 +196,21 @@ function Page1() {
             cubic splines
           </a>
         </span>
-        . Click <span style={italic}>Next</span> for instructions on how to use
-        this tool. Click <span style={italic}>Start Graphing</span> if you want
-        to skip this tutorial
+        .
       </p>
-
-      <img
-        className="selectDisable"
-        src={mainImg}
-        alt="Main image"
-        style={mainImageStyle}
-      />
+      <div style={imgWrapper}>
+        <img
+          className="selectDisable"
+          src={mainImg}
+          alt="Main image"
+          style={mainImageStyle}
+        />
+      </div>
+      <p style={text}>
+        Click <span style={italic}>Next</span> to see instructions on how to use
+        this tool. If you know what you're doing, you can click{" "}
+        <span style={italic}>Start Graphing</span> to skip this tutorial
+      </p>
     </div>
   );
 }

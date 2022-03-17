@@ -41,7 +41,7 @@ function FunctionPicker(props: FunctionPickerProps) {
 
   const row: React.CSSProperties = {
     display: "flex",
-    height: "50%",
+    flexWrap: "wrap",
   };
 
   const iconStyle: React.CSSProperties = {

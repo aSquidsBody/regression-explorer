@@ -20,7 +20,7 @@ function CursorMode(props: CursorModeProps) {
 
   const row: React.CSSProperties = {
     display: "flex",
-    height: "50%",
+    flexWrap: "wrap",
   };
 
   const iconStyle: React.CSSProperties = {

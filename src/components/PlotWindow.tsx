@@ -397,6 +397,9 @@ function PlotWindow(props: PlotWindowProps) {
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D
   ) {
+    if (pts.length === 0) {
+      return;
+    }
     if (!props.algorithm) return;
     const algorithm = algorithms.get(props.algorithm!)! as Algorithm;
 
@@ -474,7 +477,7 @@ function PlotWindow(props: PlotWindowProps) {
   }
 
   function dragPan(e: MouseEvent) {
-    // window.getSelection()!.removeAllRanges();
+    window.getSelection()!.removeAllRanges();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
