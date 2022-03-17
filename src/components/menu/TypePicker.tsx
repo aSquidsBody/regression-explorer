@@ -14,12 +14,17 @@ interface TypePickerProps {
 }
 
 function TypePicker(props: TypePickerProps) {
-  const [type, setType] = useState(FUNCTION_TYPE.SPLINE);
+  const [type, setType] = useState(FUNCTION_TYPE.REGRESSION);
 
   function clickType(t: FUNCTION_TYPE) {
     props.setType(t);
     setType(t);
   }
+
+  const row: React.CSSProperties = {
+    display: "flex",
+    height: "50%",
+  };
 
   const iconStyle: React.CSSProperties = {
     paddingLeft: "0.5rem",
@@ -30,30 +35,30 @@ function TypePicker(props: TypePickerProps) {
 
   return (
     <div style={props.style}>
-      <div>
-        <Label text={"Fitting function"}>
+      <div style={row}>
+        <Label text={"Fit Type"}>
           <div style={iconStyle}>
             <FontAwesomeIcon icon={faSquareRootVariable} size={"lg"} />
           </div>
         </Label>
-        <Option
-          key={FUNCTION_TYPE.SPLINE}
-          color={"var(--blue-button-color)"}
-          option={FUNCTION_TYPE.SPLINE}
-          selected={type}
-          onClick={clickType}
-        >
-          <p>{"Spline"}</p>
-        </Option>
+      </div>
+      <div style={row}>
         <Option
           key={FUNCTION_TYPE.REGRESSION}
           color={"var(--blue-button-color)"}
           option={FUNCTION_TYPE.REGRESSION}
           selected={type}
           onClick={clickType}
-        >
-          <p>{"Regression"}</p>
-        </Option>
+          text={"Regression"}
+        />
+        <Option
+          key={FUNCTION_TYPE.SPLINE}
+          color={"var(--blue-button-color)"}
+          option={FUNCTION_TYPE.SPLINE}
+          selected={type}
+          onClick={clickType}
+          text={"Spline"}
+        />
       </div>
     </div>
   );

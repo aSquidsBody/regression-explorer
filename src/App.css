@@ -1,5 +1,7 @@
 :root {
   --primary-color: #1798ab;
+  --pressed-color: #189eb3e7;
+  --primary-color-opaque: #1797ab3b;
   --green-button-color: rgba(90, 171, 23, 0.5);
   --blue-button-color: rgba(23, 161, 171, 0.5);
   --navbar-height: 44px;
@@ -12,4 +14,12 @@
   box-sizing: border-box;
   padding: 0px;
   margin: 0px;
+}
+
+.selectDisable {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }

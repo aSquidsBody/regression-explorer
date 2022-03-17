@@ -39,6 +39,11 @@ function FunctionPicker(props: FunctionPickerProps) {
     return funcs;
   }
 
+  const row: React.CSSProperties = {
+    display: "flex",
+    height: "50%",
+  };
+
   const iconStyle: React.CSSProperties = {
     paddingLeft: "0.5rem",
     height: "1.9rem",
@@ -48,12 +53,14 @@ function FunctionPicker(props: FunctionPickerProps) {
 
   return (
     <div style={props.style}>
-      <div>
+      <div style={row}>
         <Label text={"Fitting degree"}>
           <div style={iconStyle}>
             <FontAwesomeIcon icon={faSuperscript} size={"lg"} />
           </div>
         </Label>
+      </div>
+      <div style={row}>
         {funcList().map(({ name, verbose }) => {
           return (
             <Option
@@ -62,9 +69,8 @@ function FunctionPicker(props: FunctionPickerProps) {
               option={name}
               selected={func}
               onClick={() => clickFunction(name)}
-            >
-              <p>{verbose}</p>
-            </Option>
+              text={verbose}
+            />
           );
         })}
       </div>

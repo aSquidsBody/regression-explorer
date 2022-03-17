@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Algorithm, algorithms } from "../utils/algorithms/index";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { range } from "../utils/range";
-import { rejects } from "assert";
 
 export enum CURSOR_MODE {
   MOVE = "move",
   POINT = "point",
+  DELETE = "delete",
 }
 
 const DIAMETER = 30;
@@ -614,37 +612,37 @@ function PlotWindow(props: PlotWindowProps) {
         ref={canvasRef}
         style={canvasStyle}
         onMouseDown={
-          props.mode === CURSOR_MODE.MOVE ? selectPan : clickAddPoint
+          props.mode === CURSOR_MODE.MOVE
+            ? selectPan
+            : props.mode === CURSOR_MODE.POINT
+            ? clickAddPoint
+            : () => {}
         }
         onWheel={zoom}
       ></canvas>
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        {pts.map((pt, idx) => {
-          return (
-            <Point
-              data={pt}
-              onWheel={zoom}
-              setCursor={setCursor}
-              onMouseDown={selectPoint(pt.id)}
-              onMouseMove={dragPoint(pt.id)}
-              delete={() => deletePt(pt.id)}
-              key={"pt" + pt.id}
-              setColor={setColor(pt)}
-            />
-          );
-        })}
-      </div>
+
+      {pts.map((pt, idx) => {
+        return (
+          <Point
+            mode={props.mode}
+            data={pt}
+            onWheel={zoom}
+            setCursor={setCursor}
+            onMouseDown={selectPoint(pt.id)}
+            onMouseMove={dragPoint(pt.id)}
+            delete={() => deletePt(pt.id)}
+            key={"pt" + pt.id}
+            setColor={setColor(pt)}
+          />
+        );
+      })}
     </div>
   );
 }
 
 interface PointProps {
   data: PointData;
+  mode: CURSOR_MODE;
   onWheel: (e: React.WheelEvent<HTMLDivElement>) => void;
   onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseMove: (e: MouseEvent) => void;
@@ -657,16 +655,19 @@ interface PointProps {
 function Point(props: PointProps) {
   const [grabbing, setGrabbing] = useState(false);
   const [hover, setHover] = useState(false);
-  const [showCoords, setShowCoords] = useState(false);
 
   function mouseDown(e: React.MouseEvent<HTMLDivElement>) {
-    document.getElementById("root")!.style.cursor = "grabbing";
-    props.setCursor("grabbing");
-    setGrabbing(true);
+    if (props.mode !== CURSOR_MODE.DELETE) {
+      document.getElementById("root")!.style.cursor = "grabbing";
+      props.setCursor("grabbing");
+      setGrabbing(true);
 
-    // set the other event functions
-    document.onmouseup = mouseUp;
-    document.onmousemove = props.onMouseMove;
+      // set the other event functions
+      document.onmouseup = mouseUp;
+      document.onmousemove = props.onMouseMove;
+    } else {
+      props.delete();
+    }
   }
 
   function mouseUp() {
@@ -686,19 +687,6 @@ function Point(props: PointProps) {
     setHover(false);
   }
 
-  function shouldOpen() {
-    return !grabbing && hover;
-  }
-
-  function deletePoint() {
-    mouseUp();
-    mouseLeave();
-    props.delete();
-  }
-  function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
   const pointStyle: React.CSSProperties = {
     height: DIAMETER,
     width: DIAMETER,
@@ -714,7 +702,11 @@ function Point(props: PointProps) {
     alignItems: "center",
     justifyContent: "center",
     zIndex: 0,
-    cursor: grabbing ? "grabbing" : "grab",
+    cursor: grabbing
+      ? "grabbing"
+      : props.mode == CURSOR_MODE.DELETE
+      ? "pointer"
+      : "grab",
   };
 
   const overlay: React.CSSProperties = {
@@ -724,7 +716,7 @@ function Point(props: PointProps) {
     borderRadius: "50%",
     opacity: hover || grabbing ? 0.4 : 0,
     background: props.data.color,
-    transition: hover ? "all 0.05s linear" : "all 0.03s linear",
+    transition: hover ? "all 0.05s linear" : "",
   };
 
   const innerStyle: React.CSSProperties = {
@@ -732,70 +724,6 @@ function Point(props: PointProps) {
     width: DIAMETER / 3,
     borderRadius: "50%",
     background: props.data.color,
-  };
-
-  const cardStyle: React.CSSProperties = {
-    pointerEvents: shouldOpen() ? "all" : "none",
-    opacity: shouldOpen() ? 1 : 0,
-    zIndex: 1,
-    position: "absolute",
-    top: "0px",
-    left: 0.8 * DIAMETER,
-    background: "white",
-    border: "solid 1px black",
-    borderRadius: "10px",
-    transitionDelay: shouldOpen() ? "0.5s" : "0s",
-    padding: "5px",
-  };
-
-  const cardLabel: React.CSSProperties = {
-    padding: "3px 0px",
-    fontFamily: "var(--noto)",
-    fontSize: "0.85rem",
-  };
-
-  const cardList: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-  };
-
-  const colorStyle = (c: string): React.CSSProperties => ({
-    position: "relative",
-    height: "20px",
-    width: "20px",
-    margin: "1px",
-    background: c,
-    zIndex: 0,
-    cursor: "pointer",
-    border: c === props.data.color ? "solid 1px black" : "solid 1px white",
-    boxShadow: c === props.data.color ? "0px 0px 3px 0px black" : "",
-  });
-
-  const toggleCoords: React.CSSProperties = {
-    marginLeft: "5px",
-  };
-
-  const coordWrapper: React.CSSProperties = {
-    display: "flex",
-  };
-
-  const coordStyle: React.CSSProperties = {
-    pointerEvents: "none",
-    position: "absolute",
-    top: "0px",
-    left: DIAMETER,
-    width: 100,
-    display: showCoords ? "" : "none",
-    color: props.data.color,
-    fontSize: "1rem",
-    fontFamily: "var(--urban)",
-    fontWeight: "600",
-    zIndex: 0,
-  };
-
-  const deleteStyle: React.CSSProperties = {
-    marginRight: "2px",
-    cursor: "pointer",
   };
 
   return (
@@ -810,47 +738,8 @@ function Point(props: PointProps) {
         <div style={overlay} />
         <div style={innerStyle} />
       </div>
-      <div style={cardStyle}>
-        <div style={cardList}>
-          {colors.map((color) => {
-            return (
-              <div
-                key={props.data.id + color}
-                style={colorStyle(color)}
-                onClick={() => props.setColor(color)}
-              ></div>
-            );
-          })}
-        </div>
-        <div
-          style={{
-            ...cardList,
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={coordWrapper}>
-            <p style={cardLabel}>Show Coord.</p>
-            <input
-              style={toggleCoords}
-              type="checkbox"
-              onChange={() => setShowCoords(!showCoords)}
-            />
-          </div>
-
-          <div style={deleteStyle} onClick={deletePoint}>
-            <FontAwesomeIcon icon={faTrashCan} />
-          </div>
-        </div>
-      </div>
-      <div style={coordStyle}>{coordLabel(props.data.coord)}</div>
     </div>
   );
-}
-
-const colors = ["black", "red", "green", "blue", "orange", "purple"];
-
-function coordLabel(px: Cartesian) {
-  return `( ${px.x.toFixed(2)}, ${px.y.toFixed(2)} )`;
 }
 
 export default PlotWindow;

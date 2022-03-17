@@ -12,21 +12,54 @@ interface MenuProps {
 }
 
 function Menu(props: MenuProps) {
-  const [type, setType] = useState(FUNCTION_TYPE.SPLINE);
+  const [type, setType] = useState(FUNCTION_TYPE.REGRESSION);
 
   const relative: React.CSSProperties = {
+    display: "flex",
     position: "relative",
-    margin: "auto 0px",
+    height: "100%",
+    overflowX: "hidden",
+    overflowY: "hidden",
+  };
+
+  const section: React.CSSProperties = {
+    height: "100%",
   };
   return (
-    <div style={props.style}>
+    <div style={props.style} id="menu">
       <div style={relative}>
-        <CursorMode setMode={props.setMode} />
-        <TypePicker setType={setType} />
-        <FunctionPicker setFunction={props.setFunction} type={type} />
+        <MenuSection>
+          <CursorMode setMode={props.setMode} style={section} />
+        </MenuSection>
+        <MenuSection>
+          <TypePicker setType={setType} style={section} />
+        </MenuSection>
+        <MenuSection>
+          <FunctionPicker
+            setFunction={props.setFunction}
+            type={type}
+            style={section}
+          />
+        </MenuSection>
       </div>
     </div>
   );
+}
+
+interface MenuSectionProps {
+  children?: JSX.Element;
+}
+
+function MenuSection(props: MenuSectionProps) {
+  const style: React.CSSProperties = {
+    margin: "10px",
+    padding: "5px 10px",
+    height: "calc(100% - 20px)",
+    background: "#f0f0f0",
+    borderRadius: "20px",
+    boxShadow: "0px 0px 2px 0px #00000033",
+  };
+  return <div style={style}>{props.children}</div>;
 }
 
 export default Menu;

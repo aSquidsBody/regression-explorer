@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons";
 import { CURSOR_MODE } from "../PlotWindow";
-import { HEIGHT, LINE_HEIGHT, PADDING } from "./styles";
 import Option from "./Option";
 import Label from "./Label";
 
@@ -19,52 +18,55 @@ function CursorMode(props: CursorModeProps) {
     setMode(m);
   }
 
-  const component: React.CSSProperties = {
-    display: "inline-flex",
+  const row: React.CSSProperties = {
+    display: "flex",
+    height: "50%",
   };
 
   const iconStyle: React.CSSProperties = {
     height: "1.9rem",
-    padding: `${PADDING} 0px ${PADDING} 0.5rem`,
+    padding: `0px 0.5rem`,
     display: "flex",
     alignItems: "center",
   };
 
   return (
     <div style={props.style}>
-      <div style={component}>
-        <Label text={"Cursor mode"} helpText={labelText}>
+      <div style={row}>
+        <Label text={"Cursor Mode"}>
           <div style={iconStyle}>
             <FontAwesomeIcon icon={faArrowPointer} size={"lg"} />
           </div>
         </Label>
+      </div>
+      <div style={row}>
         <Option
           key={CURSOR_MODE.MOVE}
-          color={"var(--green-button-color)"}
+          color={"var(--primary-color)"}
           option={CURSOR_MODE.MOVE}
           selected={mode}
           onClick={onClick}
-          helpText={moveText}
-        >
-          <p>Move Screen</p>
-        </Option>
+          text={"Move Screen"}
+        />
         <Option
           key={CURSOR_MODE.POINT}
           color={"var(--green-button-color)"}
           option={CURSOR_MODE.POINT}
           selected={mode}
           onClick={onClick}
-          helpText={pointText}
-        >
-          <p>Add Point</p>
-        </Option>
+          text={"Add Point"}
+        />
+        <Option
+          key={CURSOR_MODE.DELETE}
+          color={"var(--green-button-color)"}
+          option={CURSOR_MODE.DELETE}
+          selected={mode}
+          onClick={onClick}
+          text={"Delete Point"}
+        />
       </div>
     </div>
   );
 }
-
-const labelText = "Choose what happens when you click the graph";
-const moveText = "Move around the graph window by click+dragging the plot";
-const pointText = "Create points by clicking on the graph";
 
 export default CursorMode;
