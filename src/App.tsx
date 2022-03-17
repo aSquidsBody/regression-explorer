@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import PlotWindow, { CURSOR_MODE } from "./components/PlotWindow";
 import NavBar from "./components/NavBar";
 import Menu from "./components/Menu";
 
 import "./App.css";
 import Tutorial from "./components/Tutorial";
+import { FUNCTION_NAMES } from "./utils/algorithms";
 
 function App() {
   const [mode, setMode] = useState(CURSOR_MODE.MOVE);
-  const [func, setFunction] = useState("");
+  const [func, setFunction] = useState(FUNCTION_NAMES[0].name);
   const [showTutorial, setShowTutorial] = useState(true);
 
   // style

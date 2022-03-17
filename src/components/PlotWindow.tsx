@@ -98,11 +98,8 @@ function PlotWindow(props: PlotWindowProps) {
     };
   }
 
-  function xPixel2coord(px: number, ctx: CanvasRenderingContext2D) {
-    return (
-      ((xCoordRange[1] - xCoordRange[0]) * px) / ctx.canvas.width +
-      xCoordRange[0]
-    );
+  function xPixel2coord(px: number, width: number) {
+    return ((xCoordRange[1] - xCoordRange[0]) * px) / width + xCoordRange[0];
   }
 
   function yPixel2coord(px: number, ctx: CanvasRenderingContext2D) {
@@ -119,11 +116,8 @@ function PlotWindow(props: PlotWindowProps) {
     );
   }
 
-  function yCoord2pixel(px: number, ctx: CanvasRenderingContext2D) {
-    return (
-      ((px - yCoordRange[1]) * ctx.canvas.height) /
-      (yCoordRange[0] - yCoordRange[1])
-    );
+  function yCoord2pixel(px: number, height: number) {
+    return ((px - yCoordRange[1]) * height) / (yCoordRange[0] - yCoordRange[1]);
   }
 
   // method to convert pixel to coord
@@ -164,7 +158,6 @@ function PlotWindow(props: PlotWindowProps) {
     };
   }
 
-  // method to handle the resizing of the window
   function resize() {
     const wrapper = wrapperRef.current;
     const canvas = canvasRef.current;
@@ -175,8 +168,8 @@ function PlotWindow(props: PlotWindowProps) {
 
     canvas.height = height;
     canvas.width = width;
-    setXCoordRange([-5, 5]);
     const yRange = (10 * height) / width;
+    setXCoordRange([-5, 5]);
     setYCoordRange([-yRange / 2, yRange / 2]);
   }
 
@@ -436,15 +429,15 @@ function PlotWindow(props: PlotWindowProps) {
 
     // initialize the previous step of the path
     var prevPixelX = 0;
-    var prevCoordX = xPixel2coord(prevPixelX, ctx);
+    var prevCoordX = xPixel2coord(prevPixelX, ctx.canvas.width);
     var prevCoordY = func(prevCoordX);
-    var prevPixelY = yCoord2pixel(prevCoordY, ctx);
+    var prevPixelY = yCoord2pixel(prevCoordY, ctx.canvas.height);
 
     for (let i = 0; i < interpXs.length; i++) {
       const pixelX = interpXs[i];
-      const coordX = xPixel2coord(pixelX, ctx);
+      const coordX = xPixel2coord(pixelX, ctx.canvas.width);
       const coordY = func(coordX);
-      const pixelY = yCoord2pixel(coordY, ctx);
+      const pixelY = yCoord2pixel(coordY, ctx.canvas.height);
       if (isSpline) {
         if (prevPixelX > minX && pixelX < maxX) {
           ctx.moveTo(prevPixelX, prevPixelY);

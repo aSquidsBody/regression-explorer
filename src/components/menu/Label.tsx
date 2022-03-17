@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { OPTION_HEIGHT, LINE_HEIGHT, FONT_SIZE, PADDING } from "./styles";
+import React from "react";
+import { LINE_HEIGHT, FONT_SIZE, PADDING } from "./styles";
 
 interface LabelProps {
   text: string;
@@ -13,7 +13,6 @@ function Label(props: LabelProps) {
     flexDirection: "row",
     justifyContent: "center",
     padding: `${PADDING} 10px`,
-    height: OPTION_HEIGHT,
   };
 
   const labelStyle: React.CSSProperties = {

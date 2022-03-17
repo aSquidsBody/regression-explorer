@@ -13,11 +13,6 @@ interface FunctionName {
   name: string;
 }
 
-enum FunctionType {
-  REGRESSION = "regression",
-  SPLINE = "spline",
-}
-
 interface FunctionPickerProps {
   type: FUNCTION_TYPE;
   setFunction: (f: string) => void;
@@ -25,7 +20,7 @@ interface FunctionPickerProps {
 }
 
 function FunctionPicker(props: FunctionPickerProps) {
-  const [func, setFunction] = useState("");
+  const [func, setFunction] = useState(FUNCTION_NAMES[0].name);
 
   function clickFunction(f: string) {
     props.setFunction(f);
