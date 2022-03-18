@@ -614,6 +614,17 @@ function PlotWindow(props: PlotWindowProps) {
 
   // move the points when the
   useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const canvas = canvasRef.current;
+    if (!wrapper || !canvas) return;
+
+    const height = wrapper.clientHeight;
+    const width = wrapper.clientWidth;
+
+    if (height !== canvas.clientHeight || width !== canvas.clientWidth) {
+      return resize();
+    }
+
     // move the points
     for (const pt of pts) {
       // compute the new pixel position
